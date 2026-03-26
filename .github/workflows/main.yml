@@ -62,7 +62,7 @@ jobs:
   Continuous-Deployment:
     name: Continuous Deployment (EC2)
     needs: build-and-push-ecr-image
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, X64]
 
     steps:
       - name: Checkout
