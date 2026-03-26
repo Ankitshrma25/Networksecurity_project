@@ -101,4 +101,4 @@ jobs:
       # Cleanup unused images
       - name: Cleanup
         run: |
-          docker system prune -f
+          docker system prune -a -f
