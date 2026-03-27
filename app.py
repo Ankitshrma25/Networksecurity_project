@@ -60,31 +60,51 @@ async def train_route():
         raise NetworkSecurityException(e, sys)
     
 @app.post("/predict")
-async def predict_route(request:Request,file:UploadFile=File(...)):
+async def predict_route(request: Request, file: UploadFile = File(...)):
     try:
-        df=pd.read_csv(file.file)
-        print("DF TYPE:", type(df))
-        print("DF TYPE:", type(df))
-        print("DF HEAD:", df.head())
+        df = pd.read_csv(file.file)
+
+        print("TYPE:", type(df))
+        print("VALUES TYPE:", type(df.values))
+        print("SHAPE:", df.shape)
+
+        # Ensure numeric
         df = df.astype(float)
 
-        # print(df)
-        preprocesor=load_object("final_model/preprocessor.pkl")
-        final_model=load_object("final_model/model.pkl")
-        network_model = NetworkModel(preprocessor=preprocesor,model=final_model)
-        print(df.iloc[0])
-        y_pred=network_model.predict(df.values)
-        print(y_pred)
+        preprocesor = load_object("final_model/preprocessor.pkl")
+        final_model = load_object("final_model/model.pkl")
+
+        network_model = NetworkModel(
+            preprocessor=preprocesor,
+            model=final_model
+        )
+
+        print("First Row:", df.iloc[0])
+
+        # ✅ KEY FIX: always use numpy
+        y_pred = network_model.predict(df.values)
+
+        print("Prediction:", y_pred)
+
         df['predicted_column'] = y_pred
-        print(df['predicted_column'])
-        # df["predicted_column"].replace(-1,0)
-        # return df.to_json()
-        df.to_csv("prediction_output/output.csv")
+
+        # ✅ ensure folder exists
+        import os
+        os.makedirs("prediction_output", exist_ok=True)
+
+        df.to_csv('prediction_output/output.csv')
+
         table_html = df.to_html(classes='table table-striped')
-        # print(table_html)
-        return templates.TemplateResponse("table.html", {"request": request, "table": table_html})
+
+        return templates.TemplateResponse(
+            "table.html",
+            {"request": request, "table": table_html}
+        )
+
     except Exception as e:
-        print("ERROR", e)
+        import traceback
+        print("ERROR:", e)
+        traceback.print_exc()
         raise NetworkSecurityException(e, sys)
     
 
